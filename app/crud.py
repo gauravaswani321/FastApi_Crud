@@ -3,7 +3,7 @@ from app import models, schemas, security
 
 def authenticate_user(db: Session, email: str, password: str) -> models.User:
     user = get_user_by_email(db, email)
-    if not user:
+    if not user or not user.hashed_password:
         return False
     if not security.verify_password(password, str(user.hashed_password)):
         return False
@@ -42,7 +42,7 @@ def update_user(db: Session, user_id: int, user: schemas.UserUpdate) -> models.U
     db.refresh(db_user)
     return db_user
 
-def delete_user(db: Session, user_id: int) -> models.User | None:
+def delete_user(db: Session, user_id: int) -> bool:
     db_user = get_user(db, user_id)
     if not db_user:
         return False

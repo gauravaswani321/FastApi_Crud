@@ -2,14 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.database import get_db
+from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("/", response_model=list[schemas.UserOut])
+@router.get("/", response_model=list[schemas.UserOut], dependencies=[Depends(get_current_user)])
 def read_users(db:Session = Depends(get_db)):
     return crud.get_users(db)
 
-@router.get("/{user_id}", response_model=schemas.UserOut)
+@router.get("/{user_id}", response_model=schemas.UserOut, dependencies=[Depends(get_current_user)])
 def read_user(user_id:int, db:Session = Depends(get_db)):
     user = crud.get_user(db, user_id)
     if not user:
@@ -19,17 +20,17 @@ def read_user(user_id:int, db:Session = Depends(get_db)):
 @router.post("/", response_model=schemas.UserOut, status_code = 201)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if crud.get_user_by_email(db, user.email):
-        raise HTTPException(status_code=404, detail="Email already registered")
+        raise HTTPException(status_code=409, detail="Email already registered")
     return crud.create_user(db, user)
 
-@router.put("/{user_id}", response_model=schemas.UserOut)
+@router.put("/{user_id}", response_model=schemas.UserOut, dependencies=[Depends(get_current_user)])
 def update_user(user_id: int, user: schemas.UserUpdate, db: Session = Depends(get_db)):
     updated = crud.update_user(db, user_id, user)
     if not updated:
         raise HTTPException(status_code=404, detail="User not found")
     return updated
 
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", dependencies=[Depends(get_current_user)])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     deleted = crud.delete_user(db, user_id)
     if not deleted:
