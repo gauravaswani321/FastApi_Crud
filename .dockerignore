@@ -1,0 +1,26 @@
+# Git and docs
+.git
+.gitignore
+README.md
+
+# Virtual environment & Python caches
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Testing & Linters
+.pytest_cache
+.ruff_cache
+.mypy_cache
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
